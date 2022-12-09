@@ -21,6 +21,7 @@ function supported_formats () {
     Supported formats:
     Video files (Compressed using HandBrakeCLI / x265 CRF 25): ${multimedia_video[*]}
     Image files (Compressed using ffmpeg / AVIF CRF 25): ${multimedia_images[*]}
+    Audio files (Compressed using ffmpeg / OPUS Default): ${multimedia_audio[*]}
 EOF
 }
 
