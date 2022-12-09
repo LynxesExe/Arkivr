@@ -14,6 +14,7 @@ EOF
 multimedia_video=("m4v" "mov" "mp4")
 multimedia_images=("jpg")
 unstable_multimedia_images("png") # PNG to AVIF conversion using FFMPEG generates severe artifacts, and intermediate conversion to lossless JPG is required
+multimedia_audio=("m4a")
 
 function supported_formats () {
     cat << EOF
@@ -87,6 +88,19 @@ function compress () {
             else
                 echo "Exit code is not 0: deleting artifact"
                 rm "$file.avif" "$file.jpg"
+            fi
+        fi
+        if [[ "${multimedia_audio[*]}" =~ "${extension,,}" ]]; then
+            counter=$(($counter + 1))
+            # echo -e "'\033[0;34m'Processing file $counter / $(($counter_pictures + $counter_videos)) -- $(($counter * 100 / $(($counter_pictures + $counter_videos))))% '\e[0m'"
+            echo "Compressing audio: $file"
+            ffmpeg -i "$file" "$file.opus"
+            if [[ $? == 0 ]]; then
+                echo "No errors reported: deleting original and temporary artifact"
+                rm "$file"
+            else
+                echo "Exit code is not 0: deleting artifact"
+                rm "$file.opus"
             fi
         fi
     done
