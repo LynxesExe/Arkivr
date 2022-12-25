@@ -14,7 +14,6 @@ EOF
 multimedia_video=("m4v" "mov" "mp4")
 multimedia_images=("jpg")
 unstable_multimedia_images=("png") # PNG to AVIF conversion using FFMPEG generates severe artifacts, and intermediate conversion to lossless JPG is required
-multimedia_audio=("m4a")
 
 function supported_formats () {
     cat << EOF
