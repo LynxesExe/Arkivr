@@ -90,19 +90,6 @@ function compress () {
                 rm "$file.avif" "$file.jpg"
             fi
         fi
-        if [[ "${multimedia_audio[*]}" =~ "${extension,,}" ]]; then
-            counter=$(($counter + 1))
-            # echo -e "'\033[0;34m'Processing file $counter / $(($counter_pictures + $counter_videos)) -- $(($counter * 100 / $(($counter_pictures + $counter_videos))))% '\e[0m'"
-            echo "Compressing audio: $file"
-            ffmpeg -i "$file" "$file.opus"
-            if [[ $? == 0 ]]; then
-                echo "No errors reported: deleting original and temporary artifact"
-                rm "$file"
-            else
-                echo "Exit code is not 0: deleting artifact"
-                rm "$file.opus"
-            fi
-        fi
     done
 
     popd
