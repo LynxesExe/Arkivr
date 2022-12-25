@@ -165,6 +165,7 @@ case "$1" in
         ;;
     *)
         echo "Invalid argument: $1"
+        help_message
         ;;
 
 esac
