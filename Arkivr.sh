@@ -53,7 +53,13 @@ function compress () {
             counter=$(($counter + 1))
             echo -e "'\033[0;34m'Processing file $counter / $(($counter_pictures + $counter_videos)) -- $(($counter * 100 / $(($counter_pictures + $counter_videos))))% '\e[0m'"
             echo "Compressing video: $file"
-            HandBrakeCLI -e x265 --x265-preset medium -q 25 --crop 0:0:0:0 --aencoder opus -f av_mkv -i "$file" -o "$file.mkv"
+            if [ -z "${var_handbrake_preset+x}" ]; then
+                echo "No config file specified, using default Arkivr settings"
+                HandBrakeCLI -e x265 --x265-preset medium -q 25 --crop 0:0:0:0 --aencoder opus -f av_mkv -i "$file" -o "$file.mkv"
+            else
+                echo "Using given ${var_compression_entrypoint} config file"
+                HandBrakeCLI --preset-import-file "${var_handbrake_preset}" -i "$file" -o "$file.mkv"
+            fi
             if [[ $? == 0 ]]; then
                 echo "No errors reported: deleting original"
                 rm "$file"
@@ -112,7 +118,6 @@ echo "Arkivr v1.1"
 verify_environment
 
 # Check arguments
-echo "Argument count: $#"
 while [ ! -z "$1" ]; do
 case "$1" in
     --help|-h)
@@ -126,11 +131,35 @@ case "$1" in
         ;;
     --compress|-c)
         shift
-        compress "$1"
+        if [ ! -z "${1+x}" ]; then
+            var_compression_entrypoint=$1
+        else
+            echo "Error: argument --compress and -c require an entrypoint path"
+            exit 1
+        fi
+        ;;
+    --handbrake-preset|-p)
+        shift
+        if [ ! -z "${1+x}" ]; then
+            var_handbrake_preset=$(realpath "$1")
+            echo "$var_handbrake_preset"
+            if [ ! -f "$var_handbrake_preset" ]; then
+                echo "Error: specified handbrake config file does not exist ($var_handbrake_preset)"
+                exit 1
+            fi
+        else
+            echo "Error: argument --handbrake-preset and -p require an HandBrake JSON config file path"
+            exit 1
+        fi
         ;;
     *)
         echo "Invalid argument: $1"
         ;;
+
 esac
 shift
 done
+
+if [ ! -z "${var_compression_entrypoint+x}" ]; then
+    compress "${var_compression_entrypoint}"
+fi
