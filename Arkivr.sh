@@ -108,21 +108,29 @@ EOF
     fi
 }
 
+echo "Arkivr v1.1"
+verify_environment
 
-main () {
-    echo "Arkivr v1"
-    verify_environment
-    case $1 in
-        "--help")
-            help_message
-            ;;
-        "--formats")
-            supported_formats
-            ;;
-        "--compress")
-            compress "$2"
-            ;;
-    esac
-}
-
-main $1 "$2"
+# Check arguments
+echo "Argument count: $#"
+while [ ! -z "$1" ]; do
+case "$1" in
+    --help|-h)
+        # shift
+        echo "You asked for help"
+        help_message
+        ;;
+    --formats|-f)
+        shift
+        supported_formats
+        ;;
+    --compress|-c)
+        shift
+        compress "$1"
+        ;;
+    *)
+        echo "Invalid argument: $1"
+        ;;
+esac
+shift
+done
