@@ -109,9 +109,24 @@ function compress () {
     popd
 }
 
+function verify_environment() {
+    if hash HandBrakeCLI 2>/dev/null && hash ffmpeg 2>/dev/null; then
+        return 0
+    else
+        cat << EOF
+    ERROR: HandBrakeCLI or ffmpeg not found or have wrong aliases.
+    To install HandBrake CLI check this link: https://handbrake.fr/downloads2.php
+    To install ffmpeg check this link       : https://ffmpeg.org/download.html
+    (consider using your package manager instead)
+EOF
+        return 1
+    fi
+}
+
 
 main () {
     echo "Arkivr v1"
+    verify_environment
     case $1 in
         "--help")
             help_message
