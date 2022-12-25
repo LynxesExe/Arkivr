@@ -5,8 +5,19 @@ function help_message () {
     cat << EOF
     Possible uses:
     Arkivr --compress <directory> <-- Runs Arkivr in a given entrypoint
+    Arkivr --compress <directory> --handbrake-preset <path/to/config.json> <-- When Arkivr compresses a video, it uses the specified HandBrake config file
     Arkivr --formats   <-- List formats that will be compressed
     Arkivr --help      <-- Shows this help message
+
+    Arguments:
+    (arguments do not need to follow a specific order)
+
+    --help | -h                         Displays this help message
+    --formats | -f                      Shows supported formats
+                                            Note: This list limits HandBrake in working only on files with these extensions
+    --compress | -c  <directory>        Scan and compress files within the entrypoint directory
+        --handbrake-preset|-p   <path>  Can be used with the --compress option to provide a config.json for HandBrake to use
+
 EOF
 }
 
