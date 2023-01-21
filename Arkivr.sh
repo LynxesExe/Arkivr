@@ -60,6 +60,7 @@ function compress () {
     # Compress the files
     find . -type f | while read file; do
         extension="${file##*.}"
+        # Compress videos
         if [[ "${multimedia_video[*]}" =~ "${extension,,}" ]]; then
             counter=$(($counter + 1))
             echo -e "'\033[0;34m'Processing file $counter / $(($counter_pictures + $counter_videos)) -- $(($counter * 100 / $(($counter_pictures + $counter_videos))))% '\e[0m'"
@@ -79,6 +80,7 @@ function compress () {
                 rm "$file.mkv"
             fi
         fi
+        # Compress images
         if [[ "${multimedia_images[*]}" =~ "${extension,,}" ]]; then
             counter=$(($counter + 1))
             echo -e "'\033[0;34m'Processing file $counter / $(($counter_pictures + $counter_videos)) -- $(($counter * 100 / $(($counter_pictures + $counter_videos))))% '\e[0m'"
@@ -92,6 +94,7 @@ function compress () {
                 rm "$file.avif"
             fi
         fi
+        # Compress images [deprecated will be removed]
         if [[ "${unstable_multimedia_images[*]}" =~ "${extension,,}" ]]; then
             counter=$(($counter + 1))
             echo -e "'\033[0;34m'Processing file $counter / $(($counter_pictures + $counter_videos)) -- $(($counter * 100 / $(($counter_pictures + $counter_videos))))% '\e[0m'"
