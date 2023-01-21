@@ -12,19 +12,24 @@ function help_message () {
     Arguments:
     (arguments do not need to follow a specific order)
 
-    --help | -h                         Displays this help message
-    --formats | -f                      Shows supported formats
-                                            Note: This list limits HandBrake in working only on files with these extensions
-    --compress | -c  <directory>        Scan and compress files within the entrypoint directory
-        --handbrake-preset|-p   <path>  Can be used with the --compress option to provide a config.json for HandBrake to use
+    --help | -h                                         Displays this help message
+    --formats | -f                                      Shows supported formats
+                                                            Note: This list limits HandBrake in working only on files with these extensions
+    --compress | -c  <directory>                        Scan and compress files within the entrypoint directory
+        --handbrake-preset|-p   <path>                  Can be used with the --compress option to provide a config.json for HandBrake to use
+        --exclude-video-codecs|-e <format>,<format>     Can be used with the --compress option to define a list of video codecs to exclude
+                                                            Note: the list codecs must be separated by a comma and must not have any spaces
 
 EOF
 }
 
 # CONSTANTS
-multimedia_video=("m4v" "mov" "mp4")
+multimedia_video=("m4v" "mov" "mp4" "mkv")
 multimedia_images=("jpg")
 unstable_multimedia_images=("png") # PNG to AVIF conversion using FFMPEG generates severe artifacts, and intermediate conversion to lossless JPG is required
+
+# USER DEFINED ARRAYS
+excluded_video_formats=()
 
 function supported_formats () {
     cat << EOF
@@ -62,22 +67,29 @@ function compress () {
         extension="${file##*.}"
         # Compress videos
         if [[ "${multimedia_video[*]}" =~ "${extension,,}" ]]; then
-            counter=$(($counter + 1))
-            echo -e "'\033[0;34m'Processing file $counter / $(($counter_pictures + $counter_videos)) -- $(($counter * 100 / $(($counter_pictures + $counter_videos))))% '\e[0m'"
-            echo "Compressing video: $file"
-            if [ -z "${var_handbrake_preset+x}" ]; then
-                echo "No config file specified, using default Arkivr settings"
-                HandBrakeCLI -e x265 --x265-preset medium -q 25 --crop 0:0:0:0 --aencoder opus -f av_mkv -i "$file" -o "$file.mkv"
+            raw_format_string=$(mediainfo $file | grep "Video" -A2 | grep "Format  ")
+            extracted_format=${raw_format_string##*: }
+            echo "!!$extracted_format!!"
+            if [[ ! "${excluded_video_formats[*]}" =~ "${extracted_format}" ]]; then
+                counter=$(($counter + 1))
+                echo -e "'\033[0;34m'Processing file $counter / $(($counter_pictures + $counter_videos)) -- $(($counter * 100 / $(($counter_pictures + $counter_videos))))% '\e[0m'"
+                echo "Compressing video: $file"
+                if [ -z "${var_handbrake_preset+x}" ]; then
+                    echo "No config file specified, using default Arkivr settings"
+                    HandBrakeCLI -e x265 --x265-preset medium -q 25 --crop 0:0:0:0 --aencoder opus -f av_mkv -i "$file" -o "$file.mkv"
+                else
+                    echo "Using given ${var_compression_entrypoint} config file"
+                    HandBrakeCLI --preset-import-file "${var_handbrake_preset}" -i "$file" -o "$file.mkv"
+                fi
+                if [[ $? == 0 ]]; then
+                    echo "No errors reported: deleting original"
+                    rm "$file"
+                else
+                    echo "Exit code is not 0: deleting artifact"
+                    rm "$file.mkv"
+                fi
             else
-                echo "Using given ${var_compression_entrypoint} config file"
-                HandBrakeCLI --preset-import-file "${var_handbrake_preset}" -i "$file" -o "$file.mkv"
-            fi
-            if [[ $? == 0 ]]; then
-                echo "No errors reported: deleting original"
-                rm "$file"
-            else
-                echo "Exit code is not 0: deleting artifact"
-                rm "$file.mkv"
+                echo "Blacklisted video format, skipping..."
             fi
         fi
         # Compress images
@@ -115,13 +127,14 @@ function compress () {
 }
 
 function verify_environment() {
-    if hash HandBrakeCLI 2>/dev/null && hash ffmpeg 2>/dev/null; then
+    if hash HandBrakeCLI 2>/dev/null && hash ffmpeg 2>/dev/null && hash mediainfo 2>/dev/null; then
         return 0
     else
         cat << EOF
-    ERROR: HandBrakeCLI or ffmpeg not found or have wrong aliases.
-    To install HandBrake CLI check this link: https://handbrake.fr/downloads2.php
-    To install ffmpeg check this link       : https://ffmpeg.org/download.html
+    ERROR: Required command not found or using unexpected alias.
+    [HandBrakeCLI] To install HandBrake CLI check this link: https://handbrake.fr/downloads2.php
+    [ffmpeg] To install ffmpeg check this link       : https://ffmpeg.org/download.html
+    [mediainfo] To install mediainfo check this link    : https://mediaarea.net/en/MediaInfo/Download
     (consider using your package manager instead)
 EOF
         return 1
@@ -167,6 +180,16 @@ case "$1" in
                         echo "Error: argument --handbrake-preset and -p require an HandBrake JSON config file path"
                         exit 1
                     fi
+                    ;;
+                --exclude-video-codecs|-e)
+                        shift
+                        if [ ! -z "${1+x}" ] && [ "${1+x:0:1}" != "-" ]; then
+                            IFS=',' read -r -a excluded_video_formats <<< "$1"
+                        else
+                            echo "Error: argument --exclude-video-codes | -e must have at least one codec to exclude"
+                            exit 1
+                        fi
+                        shift
                     ;;
                 *)  
                     echo "Invalid subargument: $1"
