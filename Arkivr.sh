@@ -166,7 +166,10 @@ case "$1" in
                     fi
                     ;;
                 *)  
+                    echo "Invalid subargument: $1"
                     shift
+                    help_message
+                    exit 1
                     ;;
             esac
         done
