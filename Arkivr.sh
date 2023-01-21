@@ -69,7 +69,6 @@ function compress () {
         if [[ "${multimedia_video[*]}" =~ "${extension,,}" ]]; then
             raw_format_string=$(mediainfo $file | grep "Video" -A2 | grep "Format  ")
             extracted_format=${raw_format_string##*: }
-            echo "!!$extracted_format!!"
             if [[ ! "${excluded_video_formats[*]}" =~ "${extracted_format}" ]]; then
                 counter=$(($counter + 1))
                 echo -e "'\033[0;34m'Processing file $counter / $(($counter_pictures + $counter_videos)) -- $(($counter * 100 / $(($counter_pictures + $counter_videos))))% '\e[0m'"
