@@ -148,6 +148,7 @@ case "$1" in
             echo "Error: argument --compress and -c require an entrypoint path"
             exit 1
         fi
+        shift
         while [ ! -z "$1" ]; do
             case "$1" in
                 --handbrake-preset|-p)
