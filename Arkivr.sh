@@ -142,7 +142,7 @@ case "$1" in
         ;;
     --compress|-c)
         shift
-        if [ ! -z "${1+x}" ]; then
+        if [ ! -z "${1+x}" ] && [ "${1:0:1}" != "-" ]; then
             var_compression_entrypoint=$1
         else
             echo "Error: argument --compress and -c require an entrypoint path"
@@ -152,7 +152,7 @@ case "$1" in
             case "$1" in
                 --handbrake-preset|-p)
                     shift
-                    if [ ! -z "${1+x}" ]; then
+                    if [ ! -z "${1+x}" ] && [ "${1:0:1}" != "-" ]; then
                         var_handbrake_preset=$(realpath "$1")
                         echo "$var_handbrake_preset"
                         if [ ! -f "$var_handbrake_preset" ]; then
