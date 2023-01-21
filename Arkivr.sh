@@ -141,7 +141,7 @@ EOF
     fi
 }
 
-echo "Arkivr v1.1"
+echo "Arkivr v1.2"
 verify_environment
 
 # Check arguments
