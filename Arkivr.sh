@@ -148,20 +148,27 @@ case "$1" in
             echo "Error: argument --compress and -c require an entrypoint path"
             exit 1
         fi
-        ;;
-    --handbrake-preset|-p)
-        shift
-        if [ ! -z "${1+x}" ]; then
-            var_handbrake_preset=$(realpath "$1")
-            echo "$var_handbrake_preset"
-            if [ ! -f "$var_handbrake_preset" ]; then
-                echo "Error: specified handbrake config file does not exist ($var_handbrake_preset)"
-                exit 1
-            fi
-        else
-            echo "Error: argument --handbrake-preset and -p require an HandBrake JSON config file path"
-            exit 1
-        fi
+        while [ ! -z "$1" ]; do
+            case "$1" in
+                --handbrake-preset|-p)
+                    shift
+                    if [ ! -z "${1+x}" ]; then
+                        var_handbrake_preset=$(realpath "$1")
+                        echo "$var_handbrake_preset"
+                        if [ ! -f "$var_handbrake_preset" ]; then
+                            echo "Error: specified handbrake config file does not exist ($var_handbrake_preset)"
+                            exit 1
+                        fi
+                    else
+                        echo "Error: argument --handbrake-preset and -p require an HandBrake JSON config file path"
+                        exit 1
+                    fi
+                    ;;
+                *)  
+                    shift
+                    ;;
+            esac
+        done
         ;;
     *)
         echo "Invalid argument: $1"
