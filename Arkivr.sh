@@ -82,10 +82,10 @@ function compress () {
                 fi
                 if [[ $? == 0 ]]; then
                     echo "No errors reported: deleting original"
-                    rm "$file"
+                    rm -rf "$file"
                 else
                     echo "Exit code is not 0: deleting artifact"
-                    rm "$file.mkv"
+                    rm -rf "$file.mkv"
                 fi
             else
                 echo "Blacklisted video format, skipping..."
@@ -99,10 +99,10 @@ function compress () {
             ffmpeg -i "$file" -crf 25 "$file.avif"
             if [[ $? == 0 ]]; then
                 echo "No errors reported: deleting original"
-                rm "$file"
+                rm -rf "$file"
             else
                 echo "Exit code is not 0: deleting artifact"
-                rm "$file.avif"
+                rm -rf "$file.avif"
             fi
         fi
         # Compress images [deprecated will be removed]
@@ -114,10 +114,10 @@ function compress () {
             ffmpeg -i "$file" -crf 25 "$file.avif"
             if [[ $? == 0 ]]; then
                 echo "No errors reported: deleting original and temporary artifact"
-                rm "$file" "$file.jpg"
+                rm -rf "$file" "$file.jpg"
             else
                 echo "Exit code is not 0: deleting artifact"
-                rm "$file.avif" "$file.jpg"
+                rm -rf "$file.avif" "$file.jpg"
             fi
         fi
     done
